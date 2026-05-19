@@ -6,3 +6,4 @@ obj/
 .vscode/
 wwwroot/node_modules/
 publish/
+AuraCtrlApp/node_modules/
