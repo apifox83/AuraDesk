@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
@@ -7,7 +7,209 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div id="app">Chargement...</div>
-  <script src="app.js"></script>
+<div id="app">
+  <div class="topbar">
+    <div class="logo">
+      <div class="logo-ic">🖥</div>
+      <div><div class="logo-txt">AuraCtrl</div><div class="logo-sub">Remote Access</div></div>
+    </div>
+    <div class="topright">
+      <div class="myid">
+        <div class="dot-on"></div>
+        <span class="myid-lbl">Mon ID</span>
+        <span class="myid-val" id="my-id">LAN-????</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="body">
+    <div class="sidebar">
+      <div class="ni active" id="ni-postes" onclick="nav('postes')">🖥 Postes LAN</div>
+      <div class="ni" id="ni-session" onclick="nav('session')" style="display:none">📡 Session active <span class="ni-badge">1</span></div>
+      <div class="ni" id="ni-notifs" onclick="nav('notifs')">🔔 Demandes <span class="ni-badge" id="nb2">1</span></div>
+      <div class="ni" id="ni-hist" onclick="nav('hist')">📋 Historique</div>
+      <div class="ni-sep"></div>
+      <div class="ni" id="ni-params" onclick="nav('params')">⚙ Paramètres</div>
+    </div>
+
+    <div class="content" id="view-postes">
+      <div class="stats-row">
+        <div class="stat"><div class="stat-v g" id="stat-online">0</div><div class="stat-l">En ligne</div></div>
+        <div class="stat"><div class="stat-v" id="stat-total">0</div><div class="stat-l">Postes connus</div></div>
+        <div class="stat"><div class="stat-v a">3s</div><div class="stat-l">Heartbeat</div></div>
+      </div>
+      <div class="sec-hdr">
+        <span class="sec-ttl">Postes disponibles</span>
+        <div class="mini-btn" onclick="send({type:'get_postes'})">↻ Rafraîchir</div>
+      </div>
+      <div class="grid2" id="postes-grid"></div>
+      <div class="conn-panel">
+        <div class="panel-ttl">Connexion</div>
+        <div id="conn-content"><div class="no-sel">Sélectionner un poste en ligne</div></div>
+      </div>
+    </div>
+
+    <div class="content hidden" id="view-session">
+      <div class="sess-hdr">
+        <div>
+          <div><span class="sess-name" id="sess-name">—</span><span class="sess-badge">Connecté</span></div>
+          <div class="sess-ip" id="sess-ip">—</div>
+        </div>
+        <div class="disc-btn" onclick="disconnect()">✕ Déconnecter</div>
+      </div>
+
+      <div class="scr-main" id="scr-main">
+        <div style="position:absolute;top:0;left:0;right:0;bottom:10%;background:#030710;">
+          <div style="position:absolute;top:6%;left:4%;width:54%;height:55%;background:rgba(12,18,32,0.97);border:0.5px solid rgba(232,160,32,0.2);border-radius:3px;">
+            <div style="height:11px;background:#142240;display:flex;align-items:center;padding:0 5px;gap:3px;">
+              <div style="width:5px;height:5px;border-radius:50%;background:#d05050;"></div>
+              <div style="width:5px;height:5px;border-radius:50%;background:#d09020;"></div>
+              <div style="width:5px;height:5px;border-radius:50%;background:#30a050;"></div>
+            </div>
+            <div style="padding:5px 6px;">
+              <div style="height:3px;background:rgba(232,160,32,0.25);margin-bottom:3px;width:60%;"></div>
+              <div style="height:3px;background:rgba(128,144,168,0.15);margin-bottom:3px;width:88%;"></div>
+              <div style="height:3px;background:rgba(128,144,168,0.15);margin-bottom:3px;width:72%;"></div>
+              <div style="height:3px;background:rgba(128,144,168,0.15);margin-bottom:3px;width:80%;"></div>
+            </div>
+          </div>
+          <div style="position:absolute;top:38%;left:36%;width:54%;height:42%;background:rgba(12,18,32,0.97);border:0.5px solid rgba(232,160,32,0.15);border-radius:3px;">
+            <div style="height:11px;background:#142240;display:flex;align-items:center;padding:0 5px;gap:3px;">
+              <div style="width:5px;height:5px;border-radius:50%;background:#d05050;"></div>
+              <div style="width:5px;height:5px;border-radius:50%;background:#d09020;"></div>
+            </div>
+            <div style="padding:5px 6px;">
+              <div style="height:3px;background:rgba(128,144,168,0.15);margin-bottom:3px;width:78%;"></div>
+              <div style="height:3px;background:rgba(232,160,32,0.2);margin-bottom:3px;width:50%;"></div>
+            </div>
+          </div>
+          <div id="main-cur" style="position:absolute;width:5px;height:5px;background:#fff;border-radius:50%;left:45%;top:40%;transition:all 2s ease-in-out;"></div>
+        </div>
+        <div style="position:absolute;bottom:0;left:0;right:0;height:10%;background:rgba(10,16,28,0.97);display:flex;align-items:center;padding:0 8px;gap:4px;">
+          <div style="width:10px;height:10px;border-radius:2px;background:var(--acc);"></div>
+          <div style="width:10px;height:10px;border-radius:2px;background:var(--acc);"></div>
+          <div style="width:10px;height:10px;border-radius:2px;background:rgba(232,160,32,0.2);"></div>
+          <span id="main-clk" style="margin-left:auto;font-size:8px;color:var(--t3);font-family:monospace;"></span>
+        </div>
+        <div class="so-tags">
+          <span class="so-tag so-live">LIVE</span>
+          <span class="so-tag so-ctrl">CONTROLEUR</span>
+        </div>
+        <div class="lock-overlay" id="lock-overlay">
+          <div style="font-size:24px;">🔒</div>
+          <div style="font-size:12px;color:var(--red);">Inputs propriétaire bloqués</div>
+        </div>
+      </div>
+
+      <div class="ctrl-row">
+        <div class="ctrl-card">
+          <div class="ctrl-ttl">Contrôle propriétaire distant</div>
+          <div class="input-row">
+            <div class="input-lbl">⌨ Clavier</div>
+            <div class="tgl on" id="tgl-ok" onclick="tglInput('ok')"><div class="tgl-k"></div></div>
+          </div>
+          <div class="input-row">
+            <div class="input-lbl">🖱 Souris</div>
+            <div class="tgl on" id="tgl-om" onclick="tglInput('om')"><div class="tgl-k"></div></div>
+          </div>
+        </div>
+        <div class="ctrl-card">
+          <div class="ctrl-ttl">Mon contrôle local</div>
+          <div class="input-row">
+            <div class="input-lbl">⌨ Clavier</div>
+            <div class="tgl on" id="tgl-mk" onclick="tglInput('mk')"><div class="tgl-k"></div></div>
+          </div>
+          <div class="input-row">
+            <div class="input-lbl">🖱 Souris</div>
+            <div class="tgl on" id="tgl-mm" onclick="tglInput('mm')"><div class="tgl-k"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="ctrl-card">
+        <div class="ctrl-ttl">Observateurs</div>
+        <div id="obs-list"></div>
+      </div>
+    </div>
+
+    <div class="content hidden" id="view-notifs">
+      <div class="sec-hdr"><span class="sec-ttl">Demandes de connexion</span></div>
+      <div id="notif-list"><div class="no-sel">Aucune demande en attente</div></div>
+    </div>
+
+    <div class="content hidden" id="view-hist">
+      <div class="sec-hdr"><span class="sec-ttl">Historique des sessions</span></div>
+      <div id="hist-list">
+        <div class="hist-item">
+          <div class="hist-ic">🖥</div>
+          <div><div class="hist-name">BUREAU-PC</div><div class="hist-meta">192.168.1.10 — Aujourd'hui 14:32</div></div>
+          <div class="hist-dur">00:47:12</div><span class="hist-status hs-ok">OK</span>
+        </div>
+        <div class="hist-item">
+          <div class="hist-ic">🐧</div>
+          <div><div class="hist-name">SERVEUR-DB</div><div class="hist-meta">192.168.1.20 — Hier 09:15</div></div>
+          <div class="hist-dur">00:12:04</div><span class="hist-status hs-ok">OK</span>
+        </div>
+        <div class="hist-item">
+          <div class="hist-ic">🖥</div>
+          <div><div class="hist-name">LAPTOP-ARN</div><div class="hist-meta">192.168.1.35 — Hier 08:02</div></div>
+          <div class="hist-dur">00:03:50</div><span class="hist-status hs-ko">Interrompu</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="content hidden" id="view-params">
+      <div class="param-sec">
+        <div class="param-ttl">Affichage</div>
+        <div class="param-row">
+          <div><div class="param-lbl">Aperçu écran distant</div><div class="param-desc">Miniature dans la liste des postes</div></div>
+          <div class="tgl on" id="tgl-p-prev" onclick="tglParam('prev')"><div class="tgl-k"></div></div>
+        </div>
+        <div class="param-row">
+          <div><div class="param-lbl">Autoriser mon aperçu</div><div class="param-desc">Autres postes peuvent voir mon écran</div></div>
+          <div class="tgl on" id="tgl-p-allow" onclick="document.getElementById('tgl-p-allow').classList.toggle('on')"><div class="tgl-k"></div></div>
+        </div>
+        <div class="param-row">
+          <div><div class="param-lbl">Qualité miniature</div></div>
+          <select class="param-sel"><option>Basse (5 fps)</option><option selected>Moyenne (10 fps)</option><option>Haute (15 fps)</option></select>
+        </div>
+      </div>
+      <div class="param-sec">
+        <div class="param-ttl">Réseau</div>
+        <div class="param-row">
+          <div><div class="param-lbl">Port UDP heartbeat</div><div class="param-desc">Broadcast de présence LAN</div></div>
+          <input class="param-inp" value="47200">
+        </div>
+        <div class="param-row">
+          <div><div class="param-lbl">Port tunnel VPN</div><div class="param-desc">WireGuard P2P</div></div>
+          <input class="param-inp" value="51820">
+        </div>
+        <div class="param-row">
+          <div><div class="param-lbl">Heartbeat interval</div></div>
+          <select class="param-sel"><option>1 s</option><option selected>3 s</option><option>5 s</option></select>
+        </div>
+      </div>
+      <div class="param-sec">
+        <div class="param-ttl">Sécurité</div>
+        <div class="param-row">
+          <div><div class="param-lbl">Acceptation auto</div><div class="param-desc">Connexions sans confirmation</div></div>
+          <div class="tgl" id="tgl-p-auto" onclick="document.getElementById('tgl-p-auto').classList.toggle('on')"><div class="tgl-k"></div></div>
+        </div>
+        <div class="param-row">
+          <div><div class="param-lbl">Nom de ce poste</div></div>
+          <input class="param-inp" value="MON-PC" style="width:100px;text-align:left;">
+        </div>
+      </div>
+      <div class="escape-box">
+        <div style="font-size:18px;">🛡</div>
+        <div>
+          <div style="font-size:12px;">Touche d'échappement — <span class="escape-key">Ctrl + Alt + F12</span></div>
+          <div class="escape-desc">Force la reprise locale, non désactivable</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="app.js"></script>
 </body>
 </html>

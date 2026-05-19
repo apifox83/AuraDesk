@@ -1,0 +1,43 @@
+﻿{
+  "name": "aurectrl",
+  "version": "1.0.0",
+  "description": "AuraCtrl - Remote Access",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder"
+  },
+  "build": {
+    "appId": "com.aura.ctrl",
+    "productName": "AuraCtrl",
+    "win": {
+      "target": "nsis",
+      "icon": "assets/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "installerIcon": "assets/icon.ico",
+      "uninstallerIcon": "assets/icon.ico"
+    },
+    "extraResources": [
+      {
+        "from": "../AuraCtrlService/bin/Debug/net10.0/win-x64/",
+        "to": "service",
+        "filter": ["AuraCtrlService.exe"]
+      }
+    ],
+    "files": [
+      "main.js",
+      "preload.js",
+      "assets/**"
+    ]
+  },
+  "devDependencies": {
+    "electron": "^36.3.1",
+    "electron-builder": "^26.0.12"
+  },
+  "dependencies": {
+    "node-forge": "^1.3.1"
+  }
+}
