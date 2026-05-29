@@ -1,7 +1,7 @@
-using AuraCtrlService;
+﻿using AuraCtrlService;
 
-var builder = Host.CreateApplicationBuilder(args);
-builder.Services.AddHostedService<Worker>();
+var builder = Host.CreateDefaultBuilder(args)
+    .UseWindowsService(options => { options.ServiceName = "AuraCtrlService"; })
+    .ConfigureServices(services => { services.AddHostedService<Worker>(); });
 
-var host = builder.Build();
-host.Run();
+builder.Build().Run();

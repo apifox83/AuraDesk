@@ -20,13 +20,18 @@
         <span class="myid-val" id="my-id">LAN-????</span>
       </div>
     </div>
+    <div class="winbtns">
+      <div class="wb wb-min" onclick="window.electronAPI?.minimize()">─</div>
+      <div class="wb wb-max" onclick="window.electronAPI?.maximize()">□</div>
+      <div class="wb wb-cls" onclick="window.electronAPI?.close()">✕</div>
+    </div>
   </div>
 
   <div class="body">
     <div class="sidebar">
       <div class="ni active" id="ni-postes" onclick="nav('postes')">🖥 Postes LAN</div>
       <div class="ni" id="ni-session" onclick="nav('session')" style="display:none">📡 Session active <span class="ni-badge">1</span></div>
-      <div class="ni" id="ni-notifs" onclick="nav('notifs')">🔔 Demandes <span class="ni-badge" id="nb2">1</span></div>
+      <div class="ni" id="ni-notifs" onclick="nav('notifs')">🔔 Demandes <span class="ni-badge" id="nb2">0</span></div>
       <div class="ni" id="ni-hist" onclick="nav('hist')">📋 Historique</div>
       <div class="ni-sep"></div>
       <div class="ni" id="ni-params" onclick="nav('params')">⚙ Paramètres</div>
@@ -57,40 +62,8 @@
         </div>
         <div class="disc-btn" onclick="disconnect()">✕ Déconnecter</div>
       </div>
-
       <div class="scr-main" id="scr-main">
-        <div style="position:absolute;top:0;left:0;right:0;bottom:10%;background:#030710;">
-          <div style="position:absolute;top:6%;left:4%;width:54%;height:55%;background:rgba(12,18,32,0.97);border:0.5px solid rgba(232,160,32,0.2);border-radius:3px;">
-            <div style="height:11px;background:#142240;display:flex;align-items:center;padding:0 5px;gap:3px;">
-              <div style="width:5px;height:5px;border-radius:50%;background:#d05050;"></div>
-              <div style="width:5px;height:5px;border-radius:50%;background:#d09020;"></div>
-              <div style="width:5px;height:5px;border-radius:50%;background:#30a050;"></div>
-            </div>
-            <div style="padding:5px 6px;">
-              <div style="height:3px;background:rgba(232,160,32,0.25);margin-bottom:3px;width:60%;"></div>
-              <div style="height:3px;background:rgba(128,144,168,0.15);margin-bottom:3px;width:88%;"></div>
-              <div style="height:3px;background:rgba(128,144,168,0.15);margin-bottom:3px;width:72%;"></div>
-              <div style="height:3px;background:rgba(128,144,168,0.15);margin-bottom:3px;width:80%;"></div>
-            </div>
-          </div>
-          <div style="position:absolute;top:38%;left:36%;width:54%;height:42%;background:rgba(12,18,32,0.97);border:0.5px solid rgba(232,160,32,0.15);border-radius:3px;">
-            <div style="height:11px;background:#142240;display:flex;align-items:center;padding:0 5px;gap:3px;">
-              <div style="width:5px;height:5px;border-radius:50%;background:#d05050;"></div>
-              <div style="width:5px;height:5px;border-radius:50%;background:#d09020;"></div>
-            </div>
-            <div style="padding:5px 6px;">
-              <div style="height:3px;background:rgba(128,144,168,0.15);margin-bottom:3px;width:78%;"></div>
-              <div style="height:3px;background:rgba(232,160,32,0.2);margin-bottom:3px;width:50%;"></div>
-            </div>
-          </div>
-          <div id="main-cur" style="position:absolute;width:5px;height:5px;background:#fff;border-radius:50%;left:45%;top:40%;transition:all 2s ease-in-out;"></div>
-        </div>
-        <div style="position:absolute;bottom:0;left:0;right:0;height:10%;background:rgba(10,16,28,0.97);display:flex;align-items:center;padding:0 8px;gap:4px;">
-          <div style="width:10px;height:10px;border-radius:2px;background:var(--acc);"></div>
-          <div style="width:10px;height:10px;border-radius:2px;background:var(--acc);"></div>
-          <div style="width:10px;height:10px;border-radius:2px;background:rgba(232,160,32,0.2);"></div>
-          <span id="main-clk" style="margin-left:auto;font-size:8px;color:var(--t3);font-family:monospace;"></span>
-        </div>
+        <img id="main-screen-img" src="" style="width:100%;height:100%;object-fit:contain;display:block;">
         <div class="so-tags">
           <span class="so-tag so-live">LIVE</span>
           <span class="so-tag so-ctrl">CONTROLEUR</span>
@@ -100,7 +73,6 @@
           <div style="font-size:12px;color:var(--red);">Inputs propriétaire bloqués</div>
         </div>
       </div>
-
       <div class="ctrl-row">
         <div class="ctrl-card">
           <div class="ctrl-ttl">Contrôle propriétaire distant</div>
@@ -125,10 +97,9 @@
           </div>
         </div>
       </div>
-
       <div class="ctrl-card">
         <div class="ctrl-ttl">Observateurs</div>
-        <div id="obs-list"></div>
+        <div id="obs-list"><div class="no-sel">Aucun observateur</div></div>
       </div>
     </div>
 
@@ -144,16 +115,6 @@
           <div class="hist-ic">🖥</div>
           <div><div class="hist-name">BUREAU-PC</div><div class="hist-meta">192.168.1.10 — Aujourd'hui 14:32</div></div>
           <div class="hist-dur">00:47:12</div><span class="hist-status hs-ok">OK</span>
-        </div>
-        <div class="hist-item">
-          <div class="hist-ic">🐧</div>
-          <div><div class="hist-name">SERVEUR-DB</div><div class="hist-meta">192.168.1.20 — Hier 09:15</div></div>
-          <div class="hist-dur">00:12:04</div><span class="hist-status hs-ok">OK</span>
-        </div>
-        <div class="hist-item">
-          <div class="hist-ic">🖥</div>
-          <div><div class="hist-name">LAPTOP-ARN</div><div class="hist-meta">192.168.1.35 — Hier 08:02</div></div>
-          <div class="hist-dur">00:03:50</div><span class="hist-status hs-ko">Interrompu</span>
         </div>
       </div>
     </div>
@@ -181,12 +142,24 @@
           <input class="param-inp" value="47200">
         </div>
         <div class="param-row">
-          <div><div class="param-lbl">Port tunnel VPN</div><div class="param-desc">WireGuard P2P</div></div>
-          <input class="param-inp" value="51820">
+          <div><div class="param-lbl">Port WebSocket</div><div class="param-desc">Communication interface</div></div>
+          <input class="param-inp" value="47201">
         </div>
         <div class="param-row">
           <div><div class="param-lbl">Heartbeat interval</div></div>
           <select class="param-sel"><option>1 s</option><option selected>3 s</option><option>5 s</option></select>
+        </div>
+      </div>
+      <div class="param-sec">
+        <div class="param-ttl">Service Windows</div>
+        <div class="param-row">
+          <div><div class="param-lbl">Statut</div><div class="param-desc" id="svc-status-txt">Vérification...</div></div>
+          <span class="svc-badge unknown" id="svc-badge">...</span>
+        </div>
+        <div class="svc-btns">
+          <button class="svc-btn svc-start"   onclick="svcStart()">▶ Démarrer</button>
+          <button class="svc-btn svc-stop"    onclick="svcStop()">⏹ Arrêter</button>
+          <button class="svc-btn svc-restart" onclick="svcRestart()">↺ Redémarrer</button>
         </div>
       </div>
       <div class="param-sec">

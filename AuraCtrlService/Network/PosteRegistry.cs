@@ -1,4 +1,5 @@
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
+using System.Net;
 using System.Text.Json;
 
 namespace AuraCtrlService.Network;
@@ -7,6 +8,13 @@ public static class PosteRegistry
 {
     private static readonly ConcurrentDictionary<string, PosteEntry> _postes = new();
     private const int TimeoutSeconds = 15;
+
+    private static readonly HashSet<string> _localIps = new(
+        Dns.GetHostAddresses(Dns.GetHostName())
+            .Select(a => a.ToString())
+            .Append("127.0.0.1")
+            .Append("::1")
+    );
 
     public static void Update(string json)
     {
@@ -32,7 +40,10 @@ public static class PosteRegistry
     public static List<PosteEntry> GetOnline()
     {
         var threshold = DateTimeOffset.UtcNow.AddSeconds(-TimeoutSeconds);
-        return _postes.Values.Where(p => p.LastSeen >= threshold).OrderBy(p => p.Name).ToList();
+        return _postes.Values
+            .Where(p => p.LastSeen >= threshold && !_localIps.Contains(p.Ip))
+            .OrderBy(p => p.Name)
+            .ToList();
     }
 
     public static List<PosteEntry> GetAll()
