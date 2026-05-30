@@ -1,4 +1,4 @@
-using System.Net;
+﻿using System.Net;
 using System.Net.WebSockets;
 using System.Text;
 using System.Text.Json;
@@ -70,10 +70,10 @@ public class WebSocketServer
             var wsCtx = await ctx.AcceptWebSocketAsync(null);
             var id = Guid.NewGuid().ToString();
             _clients[id] = wsCtx.WebSocket;
-            _logger.LogInformation("Client connecté: {Id}", id);
+            _logger.LogInformation("Client connectÃ©: {Id}", id);
             await HandleWebSocketAsync(id, wsCtx.WebSocket, ct);
             _clients.TryRemove(id, out _);
-            _logger.LogInformation("Client déconnecté: {Id}", id);
+            _logger.LogInformation("Client dÃ©connectÃ©: {Id}", id);
         }
         else { await ServeStaticAsync(ctx); }
     }
@@ -122,7 +122,7 @@ public class WebSocketServer
                     int sh = System.Windows.Forms.Screen.PrimaryScreen!.Bounds.Height;
                     int ax = (int)(rx * (sw / (double)Math.Max(_remoteW, 1)));
                     int ay = (int)(ry * (sh / (double)Math.Max(_remoteH, 1)));
-                    InputInjector.MoveMouse(ax, ay);
+                    _ = PipeClient.SendAsync(System.Text.Json.JsonSerializer.Serialize(new { type = "mouse_move", x = ax, y = ay }));
                     break;
                 }
                 case "mouse_click":
@@ -135,23 +135,23 @@ public class WebSocketServer
                     int sh  = System.Windows.Forms.Screen.PrimaryScreen!.Bounds.Height;
                     int ax  = (int)(rx * (sw / (double)Math.Max(_remoteW, 1)));
                     int ay  = (int)(ry * (sh / (double)Math.Max(_remoteH, 1)));
-                    InputInjector.MouseClick(ax, ay, btn, dbl);
+                    _ = PipeClient.SendAsync(System.Text.Json.JsonSerializer.Serialize(new { type = "mouse_click", x = ax, y = ay, button = btn, dbl }));
                     break;
                 }
                 case "mouse_scroll":
-                    InputInjector.MouseScroll(root.GetProperty("delta").GetInt32());
+                    _ = PipeClient.SendAsync(System.Text.Json.JsonSerializer.Serialize(new { type = "mouse_scroll", delta = root.GetProperty("delta").GetInt32() }));
                     break;
                 case "key_press":
-                    InputInjector.KeyPress(root.GetProperty("vk").GetUInt16());
+                    _ = PipeClient.SendAsync(System.Text.Json.JsonSerializer.Serialize(new { type = "key_press", vk = root.GetProperty("vk").GetUInt16() }));
                     break;
                 case "key_down":
-                    InputInjector.KeyDown(root.GetProperty("vk").GetUInt16());
+                    _ = PipeClient.SendAsync(System.Text.Json.JsonSerializer.Serialize(new { type = "key_down", vk = root.GetProperty("vk").GetUInt16() }));
                     break;
                 case "key_up":
-                    InputInjector.KeyUp(root.GetProperty("vk").GetUInt16());
+                    _ = PipeClient.SendAsync(System.Text.Json.JsonSerializer.Serialize(new { type = "key_up", vk = root.GetProperty("vk").GetUInt16() }));
                     break;
                 case "type_text":
-                    InputInjector.TypeText(root.GetProperty("text").GetString() ?? "");
+                    _ = PipeClient.SendAsync(System.Text.Json.JsonSerializer.Serialize(new { type = "type_text", text = root.GetProperty("text").GetString() ?? "" }));
                     break;
                 default:
                     await BroadcastAsync(json, ct);
@@ -198,4 +198,6 @@ public class WebSocketServer
         ctx.Response.Close();
     }
 }
+
+
 

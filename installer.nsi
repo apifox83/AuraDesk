@@ -1,4 +1,4 @@
-!define APP_NAME "AuraDesk"
+﻿!define APP_NAME "AuraDesk"
 !define SERVICE_NAME "AuraDeskService"
 !define VERSION "1.0.0"
 !define INSTALL_DIR "$PROGRAMFILES64\AuraDesk"
@@ -19,7 +19,7 @@ ShowInstDetails show
 !insertmacro MUI_LANGUAGE "French"
 
 Section "PreInstall" SEC_PRE
-  ; Arrêter le service s'il tourne
+  ; ArrÃªter le service s'il tourne
   nsExec::Exec 'sc.exe stop "${SERVICE_NAME}"'
   Sleep 2000
   ; Tuer le processus si encore actif
@@ -28,13 +28,14 @@ Section "PreInstall" SEC_PRE
   ; Supprimer le service
   nsExec::Exec 'sc.exe delete "${SERVICE_NAME}"'
   Sleep 1000
-  ; Supprimer l'ancien dossier si présent
+  ; Supprimer l'ancien dossier si prÃ©sent
   RMDir /r "$PROGRAMFILES64\AuraDesk"
 SectionEnd
 
 Section "Service AuraDesk" SEC_SERVICE
   SetOutPath "$INSTDIR"
   File "C:\Dev\AuraDesk\publish\service\AuraDeskService.exe"
+  File "C:\Dev\AuraDesk\publish\service\AuraDeskHelper.exe"
   File "C:\Dev\AuraDesk\publish\service\appsettings.json"
   SetOutPath "$INSTDIR\wwwroot"
   File "C:\Dev\AuraDesk\publish\service\wwwroot\*.*"
@@ -45,12 +46,12 @@ Section "Service AuraDesk" SEC_SERVICE
   nsExec::Exec 'sc.exe description "${SERVICE_NAME}" "Service de controle distant AuraDesk - acces LAN securise"'
   nsExec::Exec 'sc.exe start "${SERVICE_NAME}"'
 
-  ; Règles firewall
+  ; RÃ¨gles firewall
   nsExec::Exec 'netsh advfirewall firewall delete rule name="AuraDesk"'
   nsExec::Exec 'netsh advfirewall firewall add rule name="AuraDesk UDP" dir=in action=allow protocol=UDP localport=47200'
   nsExec::Exec 'netsh advfirewall firewall add rule name="AuraDesk TCP" dir=in action=allow protocol=TCP localport=47201'
 
-  ; Désinstalleur
+  ; DÃ©sinstalleur
   WriteUninstaller "$INSTDIR\Uninstall.exe"
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME}" "DisplayName" "${APP_NAME}"
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME}" "UninstallString" "$INSTDIR\Uninstall.exe"
@@ -75,6 +76,8 @@ Section "Uninstall"
   nsExec::Exec 'netsh advfirewall firewall delete rule name="AuraDesk TCP"'
   DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME}"
 SectionEnd
+
+
 
 
 
