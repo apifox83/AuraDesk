@@ -1,7 +1,7 @@
-﻿{
+{
   "$schema": "https://json.schemastore.org/launchsettings.json",
   "profiles": {
-    "AuraCtrlService": {
+    "AuraDeskService": {
       "commandName": "Project",
       "dotnetRunMessages": true,
       "environmentVariables": {

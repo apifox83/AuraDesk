@@ -1,7 +1,7 @@
-﻿{
-  "name": "aurectrl",
+{
+  "name": "auradesk",
   "version": "1.0.0",
-  "description": "AuraCtrl - Remote Access",
+  "description": "AuraDesk - Remote Access",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
@@ -9,7 +9,7 @@
   },
   "build": {
     "appId": "com.aura.ctrl",
-    "productName": "AuraCtrl",
+    "productName": "AuraDesk",
     "win": {
       "target": "nsis",
       "icon": "assets/icon.ico"
@@ -22,9 +22,9 @@
     },
     "extraResources": [
       {
-        "from": "../AuraCtrlService/bin/Debug/net10.0/win-x64/",
+        "from": "../AuraDeskService/bin/Debug/net10.0/win-x64/",
         "to": "service",
-        "filter": ["AuraCtrlService.exe"]
+        "filter": ["AuraDeskService.exe"]
       }
     ],
     "files": [

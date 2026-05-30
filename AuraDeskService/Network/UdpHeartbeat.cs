@@ -3,7 +3,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Text.Json;
 
-namespace AuraCtrlService.Network;
+namespace AuraDeskService.Network;
 
 public class UdpHeartbeat
 {

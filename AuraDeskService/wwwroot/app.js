@@ -1,4 +1,4 @@
-﻿const WS_PORT = 47201;
+const WS_PORT = 47201;
 let ws = null;
 let sel = null;
 let previewOn = true;
@@ -288,7 +288,7 @@ function svcUpdateUI(status) {
   badge.className = 'svc-badge ' + status;
   if (status === 'running') {
     badge.textContent = '● En service';
-    txt.textContent   = 'AuraCtrlService tourne normalement';
+    txt.textContent   = 'AuraDeskService tourne normalement';
   } else if (status === 'stopped') {
     badge.textContent = '● Arrêté';
     txt.textContent   = 'Le service est arrêté';

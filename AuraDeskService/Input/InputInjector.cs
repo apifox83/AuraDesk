@@ -1,6 +1,6 @@
-﻿using System.Runtime.InteropServices;
+using System.Runtime.InteropServices;
 
-namespace AuraCtrlService.Input;
+namespace AuraDeskService.Input;
 
 public static class InputInjector
 {

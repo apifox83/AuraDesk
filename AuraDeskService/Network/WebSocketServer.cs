@@ -1,13 +1,13 @@
-﻿using System.Net;
+using System.Net;
 using System.Net.WebSockets;
 using System.Text;
 using System.Text.Json;
 using System.Collections.Concurrent;
-using AuraCtrlService.Network;
-using AuraCtrlService.Screen;
-using AuraCtrlService.Input;
+using AuraDeskService.Network;
+using AuraDeskService.Screen;
+using AuraDeskService.Input;
 
-namespace AuraCtrlService.Network;
+namespace AuraDeskService.Network;
 
 public class WebSocketServer
 {

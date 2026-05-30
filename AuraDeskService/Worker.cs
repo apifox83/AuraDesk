@@ -1,9 +1,9 @@
 using System.Net;
 using System.Net.WebSockets;
 using System.Text;
-using AuraCtrlService.Network;
+using AuraDeskService.Network;
 
-namespace AuraCtrlService;
+namespace AuraDeskService;
 
 public class Worker : BackgroundService
 {
@@ -18,7 +18,7 @@ public class Worker : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        _logger.LogInformation("AuraCtrl Service démarré");
+        _logger.LogInformation("AuraDesk Service dï¿½marrï¿½");
 
         _heartbeat = new UdpHeartbeat(_logger);
         _wsServer = new WebSocketServer(_logger);
@@ -31,7 +31,7 @@ public class Worker : BackgroundService
 
     public override async Task StopAsync(CancellationToken cancellationToken)
     {
-        _logger.LogInformation("AuraCtrl Service arrêté");
+        _logger.LogInformation("AuraDesk Service arrï¿½tï¿½");
         await base.StopAsync(cancellationToken);
     }
 }

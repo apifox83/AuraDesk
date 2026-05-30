@@ -1,8 +1,8 @@
-﻿using System.Collections.Concurrent;
+using System.Collections.Concurrent;
 using System.Net;
 using System.Text.Json;
 
-namespace AuraCtrlService.Network;
+namespace AuraDeskService.Network;
 
 public static class PosteRegistry
 {

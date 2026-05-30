@@ -1,4 +1,4 @@
-﻿const { app, BrowserWindow, ipcMain, Tray, Menu, nativeImage } = require('electron');
+const { app, BrowserWindow, ipcMain, Tray, Menu, nativeImage } = require('electron');
 const { exec } = require('child_process');
 const path = require('path');
 const fs = require('fs');
@@ -7,7 +7,7 @@ const forge = require('node-forge');
 let mainWindow = null;
 let tray = null;
 const SERVICE_PORT = 47201;
-const SERVICE_NAME = 'AuraCtrlService';
+const SERVICE_NAME = 'AuraDeskService';
 const TOKEN_FILE = path.join(app.getPath('userData'), 'aura.token');
 let trayPostesCount = 0;
 let serviceStatus = 'unknown'; // running | stopped | unknown
@@ -62,7 +62,7 @@ function getTrayIcon() {
 function updateTrayMenu() {
   if (!tray) return;
   const running = serviceStatus === 'running';
-  const statusLabel = running ? 'AuraCtrl — En service' : 'AuraCtrl — Service arrêté';
+  const statusLabel = running ? 'AuraDesk — En service' : 'AuraDesk — Service arrêté';
   const statusIcon  = running ? '🟢' : '🔴';
   tray.setToolTip(statusLabel);
   const menu = Menu.buildFromTemplate([
