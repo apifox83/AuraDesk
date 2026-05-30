@@ -17,15 +17,15 @@ public class WebSocketServer
     private static bool _previewEnabled = true;
     private static int _remoteW = 1280;
     private static int _remoteH = 720;
-    private static readonly string _token = Environment.GetEnvironmentVariable("AURA_TOKEN") ?? "";
+
 
     public WebSocketServer(ILogger logger) { _logger = logger; }
 
     public async Task StartAsync(CancellationToken ct)
     {
         var listener = new HttpListener();
-        listener.Prefixes.Add($"http://localhost:{Port}/");
-        listener.Prefixes.Add($"http://localhost:{Port}/ws/");
+        listener.Prefixes.Add($"http://+:{Port}/");
+        listener.Prefixes.Add($"http://+:{Port}/ws/");
         listener.Start();
         _logger.LogInformation("WebSocket server sur port {Port}", Port);
         var screenTask = ScreenStreamLoopAsync(ct);
@@ -45,26 +45,28 @@ public class WebSocketServer
         {
             try
             {
-                if (_previewEnabled && _clients.Count > 0)
+                using var pipe = new System.IO.Pipes.NamedPipeServerStream(
+                    "AuraDeskScreenPipe", System.IO.Pipes.PipeDirection.In, 1,
+                    System.IO.Pipes.PipeTransmissionMode.Byte,
+                    System.IO.Pipes.PipeOptions.Asynchronous);
+                await pipe.WaitForConnectionAsync(ct);
+                using var reader = new System.IO.StreamReader(pipe);
+                while (pipe.IsConnected && !ct.IsCancellationRequested)
                 {
-                    var jpeg = ScreenCapture.CaptureScreen(quality: 35, maxWidth: 1280);
-                    var b64  = Convert.ToBase64String(jpeg);
-                    var msg  = JsonSerializer.Serialize(new { type = "screen_frame", data = b64 });
-                    await BroadcastAsync(msg, ct);
+                    var line = await reader.ReadLineAsync(ct);
+                    if (line == null) break;
+                    if (_clients.Count > 0)
+                        await BroadcastAsync(line, ct);
                 }
             }
-            catch (Exception ex) { _logger.LogWarning("Screen capture: {Msg}", ex.Message); }
-            await Task.Delay(100, ct);
+            catch (OperationCanceledException) { break; }
+            catch { await Task.Delay(500, ct); }
         }
     }
 
     private async Task HandleContextAsync(HttpListenerContext ctx, CancellationToken ct)
     {
-        if (!string.IsNullOrEmpty(_token))
-        {
-            var queryToken = ctx.Request.QueryString["token"] ?? "";
-            if (queryToken != _token) { ctx.Response.StatusCode = 401; ctx.Response.Close(); return; }
-        }
+        // Token désactivé en LAN
         if (ctx.Request.IsWebSocketRequest)
         {
             var wsCtx = await ctx.AcceptWebSocketAsync(null);
@@ -198,6 +200,10 @@ public class WebSocketServer
         ctx.Response.Close();
     }
 }
+
+
+
+
 
 
 

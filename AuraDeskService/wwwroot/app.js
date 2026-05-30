@@ -1,4 +1,4 @@
-const WS_PORT = 47201;
+﻿const WS_PORT = 47201;
 let ws = null;
 let sel = null;
 let previewOn = true;
@@ -65,7 +65,7 @@ function updateStats() {
 }
 
 function osIcon(os) {
-  if (os === 'Win32NT') return '🖥'; if (os === 'Unix') return '🐧'; return '⚡';
+  if (os === 'Win32NT') return 'ðŸ–¥'; if (os === 'Unix') return 'ðŸ§'; return 'âš¡';
 }
 
 const PLACEHOLDER = '<svg viewBox="0 0 240 135" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%">' +
@@ -122,27 +122,55 @@ function selPoste(id) {
   if (sel && p) {
     c.innerHTML = '<div class="sel-row"><div class="sel-ic">' + osIcon(p.Os) + '</div>' +
       '<div><div class="sel-name">' + p.Name + '</div><div class="sel-ip">' + p.Ip + '</div></div></div>' +
-      '<button class="cbtn" onclick="openSession()">🖥 Prendre la main</button>';
-  } else { c.innerHTML = '<div class="no-sel">Sélectionner un poste en ligne</div>'; }
+      '<button class="cbtn" onclick="openSession()">ðŸ–¥ Prendre la main</button>';
+  } else { c.innerHTML = '<div class="no-sel">SÃ©lectionner un poste en ligne</div>'; }
 }
+
+let wsRemote = null;
 
 function openSession() {
   const p = postes.find(x => x.Id === sel); if (!p) return;
   document.getElementById('sess-name').textContent = p.Name;
   document.getElementById('sess-ip').textContent   = p.Ip;
   document.getElementById('ni-session').style.display = 'flex';
-  send({ type: 'request_control', from: 'local', target: p.Id });
-  nav('session'); attachInputCapture();
+  nav('session');
+
+  // Connexion WebSocket directe vers le poste distant
+  if (wsRemote) { wsRemote.close(); wsRemote = null; }
+  wsRemote = new WebSocket('ws://' + p.Ip + ':47201/ws/');
+  wsRemote.onopen = () => {
+    console.log('Connecté au poste distant: ' + p.Ip);
+    wsRemote.send(JSON.stringify({ type: 'set_preview', enabled: true }));
+  };
+  wsRemote.onmessage = (e) => {
+    const msg = JSON.parse(e.data);
+    if (msg.type === 'screen_frame') {
+      lastFrame = 'data:image/jpeg;base64,' + msg.data;
+      const img = document.getElementById('main-screen-img');
+      if (img) img.src = lastFrame;
+    }
+  };
+  wsRemote.onclose = () => { console.log('Déconnecté du poste distant'); };
+  wsRemote.onerror = (e) => { console.error('Erreur WebSocket distant', e); };
+
+  attachInputCapture();
 }
 
 function closeSession() {
   document.getElementById('ni-session').style.display = 'none';
   sel = null; detachInputCapture(); renderPostes();
-  document.getElementById('conn-content').innerHTML = '<div class="no-sel">Sélectionner un poste en ligne</div>';
+  document.getElementById('conn-content').innerHTML = '<div class="no-sel">SÃ©lectionner un poste en ligne</div>';
   nav('postes');
 }
 
-function disconnect() { send({ type: 'disconnect_all' }); closeSession(); }
+function sendRemote(obj) {
+  if (wsRemote && wsRemote.readyState === 1) wsRemote.send(JSON.stringify(obj));
+}
+
+function disconnect() {
+  if (wsRemote) { wsRemote.close(); wsRemote = null; }
+  closeSession();
+}
 
 let _mouseMoveThrottle = null;
 
@@ -180,38 +208,38 @@ function onScreenMouseMove(e) {
   if (!inputStates.mk) return;
   if (_mouseMoveThrottle) return;
   _mouseMoveThrottle = setTimeout(() => { _mouseMoveThrottle = null; }, 30);
-  const { x, y } = getScaledCoords(e); send({ type: 'mouse_move', x, y });
+  const { x, y } = getScaledCoords(e); sendRemote({ type: 'mouse_move', x, y });
 }
 
 function onScreenMouseDown(e) {
   if (e.button === 2 || !inputStates.mk) return;
-  const { x, y } = getScaledCoords(e); send({ type: 'mouse_click', x, y, button: 'left' });
+  const { x, y } = getScaledCoords(e); sendRemote({ type: 'mouse_click', x, y, button: 'left' });
 }
 
 function onScreenDblClick(e) {
   if (!inputStates.mk) return;
-  const { x, y } = getScaledCoords(e); send({ type: 'mouse_click', x, y, button: 'left', double: true });
+  const { x, y } = getScaledCoords(e); sendRemote({ type: 'mouse_click', x, y, button: 'left', double: true });
 }
 
 function onScreenRightClick(e) {
   e.preventDefault(); if (!inputStates.mk) return;
-  const { x, y } = getScaledCoords(e); send({ type: 'mouse_click', x, y, button: 'right' });
+  const { x, y } = getScaledCoords(e); sendRemote({ type: 'mouse_click', x, y, button: 'right' });
 }
 
 function onScreenWheel(e) {
   e.preventDefault(); if (!inputStates.mk) return;
-  send({ type: 'mouse_scroll', delta: e.deltaY > 0 ? -1 : 1 });
+  sendRemote({ type: 'mouse_scroll', delta: e.deltaY > 0 ? -1 : 1 });
 }
 
 function onKeyDown(e) {
   if (!inSession || !inputStates.mm) return;
   if (['F5','F12','Tab'].includes(e.key)) e.preventDefault();
-  send({ type: 'key_down', vk: e.keyCode });
+  sendRemote({ type: 'key_down', vk: e.keyCode });
 }
 
 function onKeyUp(e) {
   if (!inSession || !inputStates.mm) return;
-  send({ type: 'key_up', vk: e.keyCode });
+  sendRemote({ type: 'key_up', vk: e.keyCode });
 }
 
 function tglInput(k) {
@@ -240,11 +268,11 @@ function addNotif(msg) {
   const card = document.createElement('div'); card.className = 'notif-card';
   card.innerHTML = '<div class="notif-top"><div class="notif-av">' + initials + '</div>' +
     '<div><div class="notif-title">' + (msg.from || 'Inconnu') + ' demande la prise de main</div>' +
-    '<div class="notif-sub">LAN — ' + t + '</div></div>' +
-    '<div class="notif-time">À l\'instant</div></div>' +
+    '<div class="notif-sub">LAN â€” ' + t + '</div></div>' +
+    '<div class="notif-time">Ã€ l\'instant</div></div>' +
     '<div class="notif-btns">' +
-    '<div class="nbtn nbtn-acc" onclick="acceptNotif(this,\'' + msg.from + '\')">✓ Accepter</div>' +
-    '<div class="nbtn nbtn-ref" onclick="refuseNotif(this)">✕ Refuser</div></div>';
+    '<div class="nbtn nbtn-acc" onclick="acceptNotif(this,\'' + msg.from + '\')">âœ“ Accepter</div>' +
+    '<div class="nbtn nbtn-ref" onclick="refuseNotif(this)">âœ• Refuser</div></div>';
   list.prepend(card);
 }
 
@@ -279,7 +307,7 @@ setInterval(() => { if (ws && ws.readyState === 1) send({ type: 'get_postes' });
 window.addEventListener('DOMContentLoaded', connect);
 
 
-// ── Service control ───────────────────────────────────────────────────────────
+// â”€â”€ Service control â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function svcUpdateUI(status) {
   const badge = document.getElementById('svc-badge');
@@ -287,14 +315,14 @@ function svcUpdateUI(status) {
   if (!badge || !txt) return;
   badge.className = 'svc-badge ' + status;
   if (status === 'running') {
-    badge.textContent = '● En service';
+    badge.textContent = 'â— En service';
     txt.textContent   = 'AuraDeskService tourne normalement';
   } else if (status === 'stopped') {
-    badge.textContent = '● Arrêté';
-    txt.textContent   = 'Le service est arrêté';
+    badge.textContent = 'â— ArrÃªtÃ©';
+    txt.textContent   = 'Le service est arrÃªtÃ©';
   } else {
     badge.textContent = '? Inconnu';
-    txt.textContent   = 'Statut indéterminé';
+    txt.textContent   = 'Statut indÃ©terminÃ©';
   }
 }
 
@@ -306,3 +334,7 @@ if (window.electronAPI) {
   window.electronAPI.onServiceStatus((status) => svcUpdateUI(status));
   window.electronAPI.serviceStatus();
 }
+
+
+
+

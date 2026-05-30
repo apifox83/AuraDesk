@@ -74,8 +74,10 @@ Section "Uninstall"
   RMDir "$INSTDIR"
   nsExec::Exec 'netsh advfirewall firewall delete rule name="AuraDesk UDP"'
   nsExec::Exec 'netsh advfirewall firewall delete rule name="AuraDesk TCP"'
+  DeleteRegValue HKLM "Software\Microsoft\Windows\CurrentVersion\Run" "AuraDeskHelper"
   DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME}"
 SectionEnd
+
 
 
 

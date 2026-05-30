@@ -1,4 +1,4 @@
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using System.Net;
 using System.Text.Json;
 
@@ -41,7 +41,7 @@ public static class PosteRegistry
     {
         var threshold = DateTimeOffset.UtcNow.AddSeconds(-TimeoutSeconds);
         return _postes.Values
-            .Where(p => p.LastSeen >= threshold && !_localIps.Contains(p.Ip))
+            .Where(p => p.LastSeen >= threshold)
             .OrderBy(p => p.Name)
             .ToList();
     }
@@ -61,3 +61,4 @@ public class PosteEntry
     public DateTimeOffset LastSeen { get; set; }
     public bool IsOnline => DateTimeOffset.UtcNow.AddSeconds(-15) <= LastSeen;
 }
+
