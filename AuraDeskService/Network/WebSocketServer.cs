@@ -111,6 +111,7 @@ public class WebSocketServer
                     break;
                 case "set_preview":
                     _previewEnabled = root.GetProperty("enabled").GetBoolean();
+                    _ = PipeClient.SendAsync(json);
                     break;
                 case "remote_resolution":
                     _remoteW = root.GetProperty("w").GetInt32();
@@ -200,6 +201,7 @@ public class WebSocketServer
         ctx.Response.Close();
     }
 }
+
 
 
 

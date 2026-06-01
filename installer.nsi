@@ -4,7 +4,7 @@
 !define INSTALL_DIR "$PROGRAMFILES64\AuraDesk"
 
 Name "${APP_NAME} ${VERSION}"
-OutFile "C:\Dev\AuraDesk\publish\AuraDeskSetup.exe"
+OutFile "D:\Dev\AuraDesk\publish\AuraDeskSetup.exe"
 InstallDir "${INSTALL_DIR}"
 RequestExecutionLevel admin
 ShowInstDetails show
@@ -34,11 +34,11 @@ SectionEnd
 
 Section "Service AuraDesk" SEC_SERVICE
   SetOutPath "$INSTDIR"
-  File "C:\Dev\AuraDesk\publish\service\AuraDeskService.exe"
-  File "C:\Dev\AuraDesk\publish\service\AuraDeskHelper.exe"
-  File "C:\Dev\AuraDesk\publish\service\appsettings.json"
+  File "D:\Dev\AuraDesk\publish\service\AuraDeskService.exe"
+  File "D:\Dev\AuraDesk\publish\service\AuraDeskHelper.exe"
+  File "D:\Dev\AuraDesk\publish\service\appsettings.json"
   SetOutPath "$INSTDIR\wwwroot"
-  File "C:\Dev\AuraDesk\publish\service\wwwroot\*.*"
+  File "D:\Dev\AuraDesk\publish\service\wwwroot\*.*"
   SetOutPath "$INSTDIR"
 
   ; Installer le service Windows
@@ -77,6 +77,7 @@ Section "Uninstall"
   DeleteRegValue HKLM "Software\Microsoft\Windows\CurrentVersion\Run" "AuraDeskHelper"
   DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME}"
 SectionEnd
+
 
 
 

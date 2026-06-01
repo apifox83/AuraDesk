@@ -40,15 +40,56 @@ class Program
     [StructLayout(LayoutKind.Sequential)] public struct POINT { public int X, Y; }
     const int SRCCOPY = 0x00CC0020;
 
+    // ─── Win32 Desktop ────────────────────────────────────────────────────────
+    [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
+    static extern IntPtr OpenWindowStation(string lpszWinSta, bool fInherit, uint dwDesiredAccess);
+
+    [DllImport("user32.dll", SetLastError = true)]
+    static extern bool SetProcessWindowStation(IntPtr hWinSta);
+
+    [DllImport("user32.dll", SetLastError = true)]
+    static extern IntPtr OpenInputDesktop(uint dwFlags, bool fInherit, uint dwDesiredAccess);
+
+    [DllImport("user32.dll", SetLastError = true)]
+    static extern bool SetThreadDesktop(IntPtr hDesktop);
+
+    const uint WINSTA_ALL_ACCESS = 0x37F;
+    const uint DESKTOP_GENERIC_ALL = 0x1FF;
+
+    static void AttachToUserDesktop()
+    {
+        try
+        {
+            var winSta = OpenWindowStation("WinSta0", false, WINSTA_ALL_ACCESS);
+            if (winSta != IntPtr.Zero)
+            {
+                SetProcessWindowStation(winSta);
+                var desktop = OpenInputDesktop(0, false, DESKTOP_GENERIC_ALL);
+                if (desktop != IntPtr.Zero)
+                {
+                    SetThreadDesktop(desktop);
+                    Console.WriteLine("Attaché au bureau utilisateur");
+                }
+                else { Console.WriteLine("OpenInputDesktop échoué"); }
+            }
+            else { Console.WriteLine("OpenWindowStation échoué"); }
+        }
+        catch (Exception ex) { Console.WriteLine($"AttachToUserDesktop erreur: {ex.Message}"); }
+    }
+
     static CancellationTokenSource _cts = new();
-    static bool _previewEnabled = true;
+    static bool _previewEnabled = false;
 
     static async Task Main(string[] args)
     {
         Console.WriteLine("AuraDeskHelper démarré");
+        AttachToUserDesktop();
 
         // Lancer la capture écran en parallèle
-        _ = Task.Run(() => ScreenCaptureLoop(_cts.Token));
+        var captureThread = new Thread(() => { AttachToUserDesktop(); ScreenCaptureLoop(_cts.Token).Wait(); });
+        captureThread.IsBackground = true;
+        captureThread.SetApartmentState(ApartmentState.STA);
+        captureThread.Start();
 
         // Écouter les commandes input
         await InputPipeLoop(_cts.Token);
@@ -213,4 +254,9 @@ class Program
         SendInput(1, inputs, Marshal.SizeOf<INPUT>());
     }
 }
+
+
+
+
+
 
