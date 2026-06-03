@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
@@ -10,7 +10,7 @@
 <div id="app">
   <div class="topbar">
     <div class="logo">
-      <div class="logo-ic">🖥</div>
+      <div class="logo-ic">ðŸ–¥</div>
       <div><div class="logo-txt">AuraDesk</div><div class="logo-sub">Remote Access</div></div>
     </div>
     <div class="topright">
@@ -21,25 +21,20 @@
       </div>
     </div>
     <div class="winbtns">
-      <div class="wb wb-min" onclick="window.electronAPI?.minimize()">─</div>
-      <div class="wb wb-max" onclick="window.electronAPI?.maximize()">□</div>
-      <div class="wb wb-cls" onclick="window.electronAPI?.close()">✕</div>
+      <div class="wb wb-min" onclick="window.electronAPI?.minimize()">â”€</div>
+      <div class="wb wb-max" onclick="window.electronAPI?.maximize()">â–¡</div>
+      <div class="wb wb-cls" onclick="window.electronAPI?.close()">âœ•</div>
     </div>
   </div>
 
   <div class="body">
     <div class="sidebar">
-      <div class="ni active" id="ni-postes" onclick="nav('postes')"><img src="icons/postes_lan.webp" class="ni-icon"><span>Postes LAN</span></div>
-      <div class="ni" id="ni-session" onclick="nav('session')" style="display:none"><img src="icons/session.webp" class="ni-icon"><span>Session active</span><span class="ni-badge">1</span></div>
-      <div class="ni" id="ni-notifs" onclick="nav('notifs')"><img src="icons/demandes_serveurs.webp" class="ni-icon"><span>Demandes</span><span class="ni-badge" id="nb2">0</span></div>
-      <div class="ni" id="ni-hist" onclick="nav('hist')"><img src="icons/historique.webp" class="ni-icon"><span>Historique</span></div>
+      <div class="ni active" id="ni-postes" onclick="nav('postes')">ðŸ–¥ Postes LAN</div>
+      <div class="ni" id="ni-session" onclick="nav('session')" style="display:none">ðŸ“¡ Session active <span class="ni-badge">1</span></div>
+      <div class="ni" id="ni-notifs" onclick="nav('notifs')">ðŸ”” Demandes <span class="ni-badge" id="nb2">0</span></div>
+      <div class="ni" id="ni-hist" onclick="nav('hist')">ðŸ“‹ Historique</div>
       <div class="ni-sep"></div>
-      <div class="ni" id="ni-monitoring" onclick="nav('monitoring')"><img src="icons/monitoring.webp" class="ni-icon"><span>Monitoring</span></div>
-      <div class="ni" id="ni-terminal" onclick="nav('terminal')"><img src="icons/terminal.webp" class="ni-icon"><span>Terminal</span></div>
-      <div class="ni" id="ni-evenements" onclick="nav('evenements')"><img src="icons/evenements.webp" class="ni-icon"><span>Événements</span></div>
-      <div class="ni" id="ni-mesh" onclick="nav('mesh')"><img src="icons/mesh.webp" class="ni-icon"><span>AuraMesh</span></div>
-      <div class="ni-sep"></div>
-      <div class="ni" id="ni-params" onclick="nav('params')"><img src="icons/parametres.webp" class="ni-icon"><span>Paramètres</span></div>
+      <div class="ni" id="ni-params" onclick="nav('params')">âš™ ParamÃ¨tres</div>
     </div>
 
     <div class="content" id="view-postes">
@@ -50,22 +45,22 @@
       </div>
       <div class="sec-hdr">
         <span class="sec-ttl">Postes disponibles</span>
-        <div class="mini-btn" onclick="send({type:'get_postes'})">↻ Rafraîchir</div>
+        <div class="mini-btn" onclick="send({type:'get_postes'})">â†» RafraÃ®chir</div>
       </div>
       <div class="grid2" id="postes-grid"></div>
       <div class="conn-panel">
         <div class="panel-ttl">Connexion</div>
-        <div id="conn-content"><div class="no-sel">Sélectionner un poste en ligne</div></div>
+        <div id="conn-content"><div class="no-sel">SÃ©lectionner un poste en ligne</div></div>
       </div>
     </div>
 
     <div class="content hidden" id="view-session">
       <div class="sess-hdr">
         <div>
-          <div><span class="sess-name" id="sess-name">—</span><span class="sess-badge">Connecté</span></div>
-          <div class="sess-ip" id="sess-ip">—</div>
+          <div><span class="sess-name" id="sess-name">â€”</span><span class="sess-badge">ConnectÃ©</span></div>
+          <div class="sess-ip" id="sess-ip">â€”</div>
         </div>
-        <div class="disc-btn" onclick="disconnect()">✕ Déconnecter</div>
+        <div class="disc-btn" onclick="disconnect()">âœ• DÃ©connecter</div>
       </div>
       <div class="scr-main" id="scr-main">
         <img id="main-screen-img" src="" style="width:100%;height:100%;object-fit:contain;display:block;">
@@ -74,30 +69,30 @@
           <span class="so-tag so-ctrl">CONTROLEUR</span>
         </div>
         <div class="lock-overlay" id="lock-overlay">
-          <div style="font-size:24px;">🔒</div>
-          <div style="font-size:12px;color:var(--red);">Inputs propriétaire bloqués</div>
+          <div style="font-size:24px;">ðŸ”’</div>
+          <div style="font-size:12px;color:var(--red);">Inputs propriÃ©taire bloquÃ©s</div>
         </div>
       </div>
       <div class="ctrl-row">
         <div class="ctrl-card">
-          <div class="ctrl-ttl">Contrôle propriétaire distant</div>
+          <div class="ctrl-ttl">ContrÃ´le propriÃ©taire distant</div>
           <div class="input-row">
-            <div class="input-lbl">⌨ Clavier</div>
+            <div class="input-lbl">âŒ¨ Clavier</div>
             <div class="tgl on" id="tgl-ok" onclick="tglInput('ok')"><div class="tgl-k"></div></div>
           </div>
           <div class="input-row">
-            <div class="input-lbl">🖱 Souris</div>
+            <div class="input-lbl">ðŸ–± Souris</div>
             <div class="tgl on" id="tgl-om" onclick="tglInput('om')"><div class="tgl-k"></div></div>
           </div>
         </div>
         <div class="ctrl-card">
-          <div class="ctrl-ttl">Mon contrôle local</div>
+          <div class="ctrl-ttl">Mon contrÃ´le local</div>
           <div class="input-row">
-            <div class="input-lbl">⌨ Clavier</div>
+            <div class="input-lbl">âŒ¨ Clavier</div>
             <div class="tgl on" id="tgl-mk" onclick="tglInput('mk')"><div class="tgl-k"></div></div>
           </div>
           <div class="input-row">
-            <div class="input-lbl">🖱 Souris</div>
+            <div class="input-lbl">ðŸ–± Souris</div>
             <div class="tgl on" id="tgl-mm" onclick="tglInput('mm')"><div class="tgl-k"></div></div>
           </div>
         </div>
@@ -107,7 +102,7 @@
         <div id="obs-list"><div class="no-sel">Aucun observateur</div></div>
       </div>
       <div class="res-sess-card">
-        <div class="res-sess-ttl">⊞ Résolution des écrans distants</div>
+        <div class="res-sess-ttl">&#x229E; Résolution des écrans distants</div>
         <div class="res-sess-monitors" id="res-sess-monitors">
           <div style="font-size:11px;color:var(--t3);">Connexion en cours...</div>
         </div>
@@ -123,53 +118,33 @@
       <div class="sec-hdr"><span class="sec-ttl">Historique des sessions</span></div>
       <div id="hist-list">
         <div class="hist-item">
-          <div class="hist-ic">🖥</div>
-          <div><div class="hist-name">BUREAU-PC</div><div class="hist-meta">192.168.1.10 — Aujourd'hui 14:32</div></div>
+          <div class="hist-ic">ðŸ–¥</div>
+          <div><div class="hist-name">BUREAU-PC</div><div class="hist-meta">192.168.1.10 â€” Aujourd'hui 14:32</div></div>
           <div class="hist-dur">00:47:12</div><span class="hist-status hs-ok">OK</span>
         </div>
       </div>
-    </div>
-
-    <div class="content hidden" id="view-monitoring">
-      <div class="sec-hdr"><span class="sec-ttl">Monitoring</span></div>
-      <div class="no-sel" style="padding:20px;">En cours de développement...</div>
-    </div>
-
-    <div class="content hidden" id="view-terminal">
-      <div class="sec-hdr"><span class="sec-ttl">Terminal distant</span></div>
-      <div class="no-sel" style="padding:20px;">En cours de développement...</div>
-    </div>
-
-    <div class="content hidden" id="view-evenements">
-      <div class="sec-hdr"><span class="sec-ttl">Événements système</span></div>
-      <div class="no-sel" style="padding:20px;">En cours de développement...</div>
-    </div>
-
-    <div class="content hidden" id="view-mesh">
-      <div class="sec-hdr"><span class="sec-ttl">AuraMesh</span></div>
-      <div class="no-sel" style="padding:20px;">En cours de développement...</div>
     </div>
 
     <div class="content hidden" id="view-params">
       <div class="param-sec">
         <div class="param-ttl">Affichage</div>
         <div class="param-row">
-          <div><div class="param-lbl">Aperçu écran distant</div><div class="param-desc">Miniature dans la liste des postes</div></div>
+          <div><div class="param-lbl">AperÃ§u Ã©cran distant</div><div class="param-desc">Miniature dans la liste des postes</div></div>
           <div class="tgl on" id="tgl-p-prev" onclick="tglParam('prev')"><div class="tgl-k"></div></div>
         </div>
         <div class="param-row">
-          <div><div class="param-lbl">Autoriser mon aperçu</div><div class="param-desc">Autres postes peuvent voir mon écran</div></div>
+          <div><div class="param-lbl">Autoriser mon aperÃ§u</div><div class="param-desc">Autres postes peuvent voir mon Ã©cran</div></div>
           <div class="tgl on" id="tgl-p-allow" onclick="document.getElementById('tgl-p-allow').classList.toggle('on')"><div class="tgl-k"></div></div>
         </div>
         <div class="param-row">
-          <div><div class="param-lbl">Qualité miniature</div></div>
+          <div><div class="param-lbl">QualitÃ© miniature</div></div>
           <select class="param-sel"><option>Basse (5 fps)</option><option selected>Moyenne (10 fps)</option><option>Haute (15 fps)</option></select>
         </div>
       </div>
       <div class="param-sec">
-        <div class="param-ttl">Réseau</div>
+        <div class="param-ttl">RÃ©seau</div>
         <div class="param-row">
-          <div><div class="param-lbl">Port UDP heartbeat</div><div class="param-desc">Broadcast de présence LAN</div></div>
+          <div><div class="param-lbl">Port UDP heartbeat</div><div class="param-desc">Broadcast de prÃ©sence LAN</div></div>
           <input class="param-inp" value="47200">
         </div>
         <div class="param-row">
@@ -184,17 +159,17 @@
       <div class="param-sec">
         <div class="param-ttl">Service Windows</div>
         <div class="param-row">
-          <div><div class="param-lbl">Statut</div><div class="param-desc" id="svc-status-txt">Vérification...</div></div>
+          <div><div class="param-lbl">Statut</div><div class="param-desc" id="svc-status-txt">VÃ©rification...</div></div>
           <span class="svc-badge unknown" id="svc-badge">...</span>
         </div>
         <div class="svc-btns">
-          <button class="svc-btn svc-start"   onclick="svcStart()">▶ Démarrer</button>
-          <button class="svc-btn svc-stop"    onclick="svcStop()">⏹ Arrêter</button>
-          <button class="svc-btn svc-restart" onclick="svcRestart()">↺ Redémarrer</button>
+          <button class="svc-btn svc-start"   onclick="svcStart()">â–¶ DÃ©marrer</button>
+          <button class="svc-btn svc-stop"    onclick="svcStop()">â¹ ArrÃªter</button>
+          <button class="svc-btn svc-restart" onclick="svcRestart()">â†º RedÃ©marrer</button>
         </div>
       </div>
       <div class="param-sec">
-        <div class="param-ttl">Sécurité</div>
+        <div class="param-ttl">SÃ©curitÃ©</div>
         <div class="param-row">
           <div><div class="param-lbl">Acceptation auto</div><div class="param-desc">Connexions sans confirmation</div></div>
           <div class="tgl" id="tgl-p-auto" onclick="document.getElementById('tgl-p-auto').classList.toggle('on')"><div class="tgl-k"></div></div>
@@ -205,10 +180,10 @@
         </div>
       </div>
       <div class="escape-box">
-        <div style="font-size:18px;">🛡</div>
+        <div style="font-size:18px;">ðŸ›¡</div>
         <div>
-          <div style="font-size:12px;">Touche d'échappement — <span class="escape-key">Ctrl + Alt + F12</span></div>
-          <div class="escape-desc">Force la reprise locale, non désactivable</div>
+          <div style="font-size:12px;">Touche d'Ã©chappement â€” <span class="escape-key">Ctrl + Alt + F12</span></div>
+          <div class="escape-desc">Force la reprise locale, non dÃ©sactivable</div>
         </div>
       </div>
     </div>
@@ -216,6 +191,15 @@
 </div>
 <script src="carbon-bg.js"></script>
 <script src="app.js"></script>
-<script src="poste-panel.js"></script>
+  
+  <script src="poste-panel.js"></script>
 </body>
 </html>
+
+
+
+
+
+
+
+

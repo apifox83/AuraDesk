@@ -1,4 +1,4 @@
-using System.Net;
+﻿using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Text.Json;
@@ -44,7 +44,11 @@ public class UdpHeartbeat
         var ep = new IPEndPoint(IPAddress.Broadcast, Port);
         while (!ct.IsCancellationRequested)
         {
-            var payload = new { type = "heartbeat", id = _posteId, name = _posteName, ip = GetLocalIp(), os = Environment.OSVersion.Platform.ToString(), ts = DateTimeOffset.UtcNow.ToUnixTimeSeconds() };
+            var screens = DisplayManager.GetScreens().Select(s => new {
+                id = s.Id, name = s.Name,
+                width = s.Width, height = s.Height, hz = s.Hz
+            });
+            var payload = new { type = "heartbeat", id = _posteId, name = _posteName, ip = GetLocalIp(), os = Environment.OSVersion.Platform.ToString(), ts = DateTimeOffset.UtcNow.ToUnixTimeSeconds(), screens };
             var data = System.Text.Encoding.UTF8.GetBytes(JsonSerializer.Serialize(payload));
             await sender.SendAsync(data, data.Length, ep);
             await Task.Delay(IntervalMs, ct);
@@ -76,3 +80,4 @@ public class UdpHeartbeat
         catch { return "0.0.0.0"; }
     }
 }
+

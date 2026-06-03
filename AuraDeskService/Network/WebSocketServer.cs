@@ -19,7 +19,20 @@ public class WebSocketServer
     private static int _remoteH = 720;
 
 
-    public WebSocketServer(ILogger logger) { _logger = logger; }
+    public WebSocketServer(ILogger logger)
+    {
+        _logger = logger;
+        DisplayManager.OnResolutionEvent = (device, w, h, isRevert) =>
+        {
+            var payload = JsonSerializer.Serialize(new {
+                type     = isRevert ? "resolution_reverted" : "resolution_changed",
+                screenId = device,
+                w, h,
+                success  = true
+            });
+            _ = BroadcastAsync(payload, CancellationToken.None);
+        };
+    }
 
     public async Task StartAsync(CancellationToken ct)
     {
@@ -156,6 +169,31 @@ public class WebSocketServer
                 case "type_text":
                     _ = PipeClient.SendAsync(System.Text.Json.JsonSerializer.Serialize(new { type = "type_text", text = root.GetProperty("text").GetString() ?? "" }));
                     break;
+                case "get_resolutions":
+                    var screens = DisplayManager.GetScreens();
+                    var resPayload = JsonSerializer.Serialize(new {
+                        type = "resolutions_list",
+                        screens = screens.Select(s => new {
+                            id      = s.Id,
+                            name    = s.Name,
+                            current = new { w = s.Width, h = s.Height, hz = s.Hz },
+                            modes   = s.Modes.Select(m => new { m.W, m.H, m.Hz })
+                        })
+                    });
+                    await SendAsync(clientId, resPayload, ct);
+                    break;
+                case "set_resolution":
+                    string screenId  = root.GetProperty("screenId").GetString()!;
+                    int    resW      = root.GetProperty("w").GetInt32();
+                    int    resH      = root.GetProperty("h").GetInt32();
+                    int    resHz     = root.GetProperty("hz").GetInt32();
+                    bool   permanent = root.TryGetProperty("permanent", out var pPerm) && pPerm.GetBoolean();
+                    int    revertSec = root.TryGetProperty("revertSec", out var pRev) ? pRev.GetInt32() : 15;
+                    DisplayManager.SetResolution(screenId, resW, resH, resHz, permanent, revertSec);
+                    break;
+                case "keep_resolution":
+                    DisplayManager.KeepResolution();
+                    break;
                 default:
                     await BroadcastAsync(json, ct);
                     break;
@@ -171,6 +209,11 @@ public class WebSocketServer
             var data = Encoding.UTF8.GetBytes(json);
             await ws.SendAsync(data, WebSocketMessageType.Text, true, ct);
         }
+    }
+
+    public void BroadcastMesh(string json)
+    {
+        _ = BroadcastAsync(json, CancellationToken.None);
     }
 
     private async Task BroadcastAsync(string json, CancellationToken ct)
@@ -201,6 +244,9 @@ public class WebSocketServer
         ctx.Response.Close();
     }
 }
+
+
+
 
 
 

@@ -1,4 +1,4 @@
-﻿using System.IO.Pipes;
+using System.IO.Pipes;
 using System.Text.Json;
 using System.Runtime.InteropServices;
 using System.Drawing;
@@ -8,7 +8,6 @@ namespace AuraDeskHelper;
 
 class Program
 {
-    // ─── Win32 Input ─────────────────────────────────────────────────────────
     [DllImport("user32.dll", SetLastError = true)]
     static extern uint SendInput(uint nInputs, INPUT[] pInputs, int cbSize);
     [DllImport("user32.dll")] static extern IntPtr GetMessageExtraInfo();
@@ -26,7 +25,6 @@ class Program
     const uint MOUSEEVENTF_WHEEL = 0x0800;
     const uint KEYEVENTF_KEYUP = 0x0002, KEYEVENTF_SCANCODE = 0x0008;
 
-    // ─── Win32 Screen ─────────────────────────────────────────────────────────
     [DllImport("user32.dll")] static extern IntPtr GetDesktopWindow();
     [DllImport("user32.dll")] static extern IntPtr GetDC(IntPtr hWnd);
     [DllImport("gdi32.dll")] static extern IntPtr CreateCompatibleDC(IntPtr hdc);
@@ -40,16 +38,12 @@ class Program
     [StructLayout(LayoutKind.Sequential)] public struct POINT { public int X, Y; }
     const int SRCCOPY = 0x00CC0020;
 
-    // ─── Win32 Desktop ────────────────────────────────────────────────────────
     [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
     static extern IntPtr OpenWindowStation(string lpszWinSta, bool fInherit, uint dwDesiredAccess);
-
     [DllImport("user32.dll", SetLastError = true)]
     static extern bool SetProcessWindowStation(IntPtr hWinSta);
-
     [DllImport("user32.dll", SetLastError = true)]
     static extern IntPtr OpenInputDesktop(uint dwFlags, bool fInherit, uint dwDesiredAccess);
-
     [DllImport("user32.dll", SetLastError = true)]
     static extern bool SetThreadDesktop(IntPtr hDesktop);
 
@@ -66,36 +60,26 @@ class Program
                 SetProcessWindowStation(winSta);
                 var desktop = OpenInputDesktop(0, false, DESKTOP_GENERIC_ALL);
                 if (desktop != IntPtr.Zero)
-                {
                     SetThreadDesktop(desktop);
-                    Console.WriteLine("Attaché au bureau utilisateur");
-                }
-                else { Console.WriteLine("OpenInputDesktop échoué"); }
             }
-            else { Console.WriteLine("OpenWindowStation échoué"); }
         }
-        catch (Exception ex) { Console.WriteLine($"AttachToUserDesktop erreur: {ex.Message}"); }
+        catch { }
     }
 
     static CancellationTokenSource _cts = new();
     static bool _previewEnabled = false;
+    static int _selectedMonitor = 0;
 
     static async Task Main(string[] args)
     {
-        Console.WriteLine("AuraDeskHelper démarré");
-        AttachToUserDesktop();
-
-        // Lancer la capture écran en parallèle
         var captureThread = new Thread(() => { AttachToUserDesktop(); ScreenCaptureLoop(_cts.Token).Wait(); });
         captureThread.IsBackground = true;
         captureThread.SetApartmentState(ApartmentState.STA);
         captureThread.Start();
 
-        // Écouter les commandes input
         await InputPipeLoop(_cts.Token);
     }
 
-    // ─── Screen capture → Service ─────────────────────────────────────────────
     static async Task ScreenCaptureLoop(CancellationToken ct)
     {
         while (!ct.IsCancellationRequested)
@@ -107,7 +91,6 @@ class Program
                     var jpeg = CaptureScreen(35, 1280);
                     var b64  = Convert.ToBase64String(jpeg);
                     var json = JsonSerializer.Serialize(new { type = "screen_frame", data = b64 });
-
                     using var pipe = new NamedPipeClientStream(".", "AuraDeskScreenPipe", PipeDirection.Out);
                     await pipe.ConnectAsync(200, ct);
                     var data = System.Text.Encoding.UTF8.GetBytes(json + "\n");
@@ -121,8 +104,15 @@ class Program
 
     static byte[] CaptureScreen(int quality, int maxWidth)
     {
-        int sw = System.Windows.Forms.Screen.PrimaryScreen!.Bounds.Width;
-        int sh = System.Windows.Forms.Screen.PrimaryScreen!.Bounds.Height;
+        var screens = System.Windows.Forms.Screen.AllScreens;
+        Rectangle bounds;
+        if (_selectedMonitor > 0 && _selectedMonitor <= screens.Length)
+            bounds = screens[_selectedMonitor - 1].Bounds;
+        else
+            bounds = System.Windows.Forms.Screen.PrimaryScreen!.Bounds;
+
+        int sw = bounds.Width, sh = bounds.Height;
+        int sx = bounds.X, sy = bounds.Y;
         int tw = Math.Min(sw, maxWidth);
         int th = (int)(sh * (tw / (double)sw));
 
@@ -131,7 +121,7 @@ class Program
         IntPtr memDC      = CreateCompatibleDC(desktopDC);
         IntPtr bmp        = CreateCompatibleBitmap(desktopDC, sw, sh);
         IntPtr oldBmp     = SelectObject(memDC, bmp);
-        BitBlt(memDC, 0, 0, sw, sh, desktopDC, 0, 0, SRCCOPY);
+        BitBlt(memDC, 0, 0, sw, sh, desktopDC, sx, sy, SRCCOPY);
         SelectObject(memDC, oldBmp);
 
         using var fullBmp  = Image.FromHbitmap(bmp);
@@ -143,8 +133,8 @@ class Program
         DeleteObject(bmp); DeleteDC(memDC); ReleaseDC(desktopWnd, desktopDC);
 
         GetCursorPos(out var cur);
-        int cx = (int)(cur.X * (tw / (double)sw));
-        int cy = (int)(cur.Y * (th / (double)sh));
+        int cx = (int)((cur.X - sx) * (tw / (double)sw));
+        int cy = (int)((cur.Y - sy) * (th / (double)sh));
         using var pen = new Pen(Color.Red, 2);
         g.DrawEllipse(pen, cx - 6, cy - 6, 12, 12);
         g.DrawLine(pen, cx - 10, cy, cx + 10, cy);
@@ -158,7 +148,6 @@ class Program
         return ms.ToArray();
     }
 
-    // ─── Input pipe ───────────────────────────────────────────────────────────
     static async Task InputPipeLoop(CancellationToken ct)
     {
         while (!ct.IsCancellationRequested)
@@ -188,8 +177,33 @@ class Program
             var root = doc.RootElement;
             switch (root.GetProperty("type").GetString())
             {
-                case "set_preview": _previewEnabled = root.GetProperty("enabled").GetBoolean(); break;
-                case "mouse_move":  SetCursorPos(root.GetProperty("x").GetInt32(), root.GetProperty("y").GetInt32()); break;
+                case "set_preview":
+                    _previewEnabled = root.GetProperty("enabled").GetBoolean();
+                    break;
+                case "get_monitors":
+                    var screens = System.Windows.Forms.Screen.AllScreens;
+                    var monitors = new List<object>();
+                    for (int i = 0; i < screens.Length; i++)
+                    {
+                        monitors.Add(new { index = i + 1, name = screens[i].DeviceName,
+                            w = screens[i].Bounds.Width, h = screens[i].Bounds.Height,
+                            x = screens[i].Bounds.X, y = screens[i].Bounds.Y,
+                            primary = screens[i].Primary });
+                    }
+                    var monJson = JsonSerializer.Serialize(new { type = "monitors_list", data = monitors });
+                    try {
+                        using var mp = new NamedPipeClientStream(".", "AuraDeskScreenPipe", PipeDirection.Out);
+                        mp.Connect(200);
+                        var md = System.Text.Encoding.UTF8.GetBytes(monJson + "\n");
+                        mp.Write(md);
+                    } catch {}
+                    break;
+                case "set_monitor":
+                    _selectedMonitor = root.GetProperty("index").GetInt32();
+                    break;
+                case "mouse_move":
+                    SetCursorPos(root.GetProperty("x").GetInt32(), root.GetProperty("y").GetInt32());
+                    break;
                 case "mouse_click":
                     int x = root.GetProperty("x").GetInt32(), y = root.GetProperty("y").GetInt32();
                     var btn = root.TryGetProperty("button", out var b) ? b.GetString() ?? "left" : "left";
@@ -202,7 +216,7 @@ class Program
                 case "type_text": TypeText(root.GetProperty("text").GetString() ?? ""); break;
             }
         }
-        catch (Exception ex) { Console.WriteLine($"Command error: {ex.Message}"); }
+        catch { }
     }
 
     static void Click(string btn)
@@ -254,9 +268,3 @@ class Program
         SendInput(1, inputs, Marshal.SizeOf<INPUT>());
     }
 }
-
-
-
-
-
-

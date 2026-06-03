@@ -25,13 +25,28 @@ public static class PosteRegistry
             if (root.GetProperty("type").GetString() != "heartbeat") return;
             var id = root.GetProperty("id").GetString() ?? "";
             if (string.IsNullOrEmpty(id)) return;
+            var ip = root.GetProperty("ip").GetString() ?? "";
+            // Lire les screens depuis le heartbeat
+            var screens = new List<ScreenInfo>();
+            if (root.TryGetProperty("screens", out var screensEl))
+            {
+                foreach (var s in screensEl.EnumerateArray())
+                    screens.Add(new ScreenInfo {
+                        Id     = s.TryGetProperty("id",     out var sid)  ? sid.GetString()  ?? "" : "",
+                        Name   = s.TryGetProperty("name",   out var sn)   ? sn.GetString()   ?? "" : "",
+                        Width  = s.TryGetProperty("width",  out var sw)   ? sw.GetInt32()  : 0,
+                        Height = s.TryGetProperty("height", out var sh)   ? sh.GetInt32()  : 0,
+                        Hz     = s.TryGetProperty("hz",     out var shz)  ? shz.GetInt32() : 0,
+                    });
+            }
             _postes[id] = new PosteEntry
             {
                 Id = id,
                 Name = root.GetProperty("name").GetString() ?? "",
-                Ip = root.GetProperty("ip").GetString() ?? "",
+                Ip = ip,
                 Os = root.GetProperty("os").GetString() ?? "",
-                LastSeen = DateTimeOffset.UtcNow
+                LastSeen = DateTimeOffset.UtcNow,
+                Screens = screens
             };
         }
         catch { }
@@ -60,5 +75,8 @@ public class PosteEntry
     public string Os { get; set; } = "";
     public DateTimeOffset LastSeen { get; set; }
     public bool IsOnline => DateTimeOffset.UtcNow.AddSeconds(-15) <= LastSeen;
+    public List<ScreenInfo> Screens { get; set; } = new();
 }
+
+
 
